@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Landriani Blenkmann (Local)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- ESTILOS --- */
+        :root {
+            --color-lb-green: #1F6C43;  /* Pantone 7733 C */
+            --color-lb-gold: #D4AF37;   /* Pantone 110 C */
+            --color-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--color-bg);
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            font-size: 14px;
+        }
+
+        /* Colores Corporativos */
+        .bg-lb-green { background-color: var(--color-lb-green); }
+        .bg-lb-gold { background-color: var(--color-lb-gold); }
+        .text-lb-green { color: var(--color-lb-green); }
+        .text-lb-gold { color: var(--color-lb-gold); }
+        .border-lb-gold { border-color: var(--color-lb-gold); }
+        .border-lb-green { border-color: var(--color-lb-green); }
+
+        /* Avatar de Perfil */
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--color-lb-gold);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Inputs */
+        .lb-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .lb-input:focus {
+            border-color: var(--color-lb-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Navegación */
+        .nav-item.active { 
+            color: var(--color-lb-green); 
+            font-weight: 700; 
+        }
+        .nav-item.active svg { 
+            stroke: var(--color-lb-gold); 
+            stroke-width: 2.5;
+        }
+
+        /* Gráficos */
+        .chart-bar-container { 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: space-around; 
+            height: 140px; 
+            padding-bottom: 5px; 
+            border-bottom: 1px solid #e5e7eb; 
+        }
+        .chart-bar-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%; 
+            cursor: pointer;
+        }
+        .chart-bar { 
+            width: 60%; 
+            background-color: var(--color-lb-gold); 
+            border-radius: 4px 4px 0 0; 
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+            min-height: 4px; 
+        }
+        .chart-bar:hover { 
+            background-color: var(--color-lb-green); 
+        }
+        .chart-label { 
+            font-size: 9px; 
+            margin-top: 4px; 
+            color: #94a3b8; 
+            text-align: center; 
+            font-weight: 600;
+        }
+        .chart-value { 
+            font-size: 9px; 
+            font-weight: 800; 
+            margin-bottom: 2px; 
+            color: var(--color-lb-green); 
+        }
+
+        /* Filtros y UI */
+        .filter-pill { 
+            padding: 0.3rem 0.9rem; 
+            border-radius: 9999px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            color: #64748b; 
+            background-color: white; 
+            border: 1px solid #e2e8f0; 
+            white-space: nowrap; 
+            transition: all 0.2s; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .filter-pill.active { 
+            background-color: var(--color-lb-green); 
+            color: white; 
+            border-color: var(--color-lb-green); 
+            box-shadow: 0 2px 4px rgba(31, 108, 67, 0.2);
+        }
+
+        .alpha-scroller::-webkit-scrollbar { display: none; }
+        .alpha-scroller { -ms-overflow-style: none; scrollbar-width: none; }
+        .alpha-btn { 
+            min-width: 32px; 
+            height: 32px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 8px; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            color: #94a3b8; 
+            transition: all 0.2s; 
+        }
+        .alpha-btn.active { 
+            background-color: var(--color-lb-gold); 
+            color: white; 
+            box-shadow: 0 2px 5px rgba(212, 175, 55, 0.3);
+        }
+
+        .label-tiny {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-lb-green);
+            margin-bottom: 2px;
+            letter-spacing: 0.05em;
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-50 pb-24 select-none">
+
+    <!-- LOGIN SCREEN -->
+    <div id="view-login" class="fixed inset-0 bg-lb-green flex flex-col items-center justify-center p-6 z-50 fade-in text-white">
+        <div class="w-full max-w-sm text-center">
+            <div class="mb-8 animate-fade-in-up">
+                <h1 class="text-3xl font-serif tracking-wide border-b-2 border-lb-gold pb-2 inline-block">
+                    Landriani Blenkmann
+                </h1>
+                <p class="text-lb-gold text-xs tracking-[0.2em] mt-2 uppercase">Gestión de Relaciones</p>
+            </div>
+            
+            <div class="bg-white text-gray-800 rounded-xl p-8 shadow-2xl space-y-5 w-full">
+                <div class="text-left">
+                    <label class="text-[10px] font-bold text-lb-green uppercase tracking-wider">Usuario</label>
+                    <input type="text" id="login-user" placeholder="Ej: admin" class="lb-input mt-1 bg-gray-50 focus:bg-white">
+                </div>
+                <div class="text-left">
+                    <label class="text-[10px] font-bold text-lb-green uppercase tracking-wider">Contraseña</label>
+                    <input type="password" id="login-pass" placeholder="••••••" class="lb-input mt-1 bg-gray-50 focus:bg-white">
+                </div>
+                <button id="btn-login" class="w-full bg-lb-gold hover:bg-yellow-600 text-white font-bold py-3.5 rounded-lg mt-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    INGRESAR
+                </button>
+                
+                <div class="text-[10px] text-gray-400 mt-4 border-t pt-4">
+                    <p class="mb-1"><strong>MODO LOCAL (Sin Internet)</strong></p>
+                    <p>Admin: <strong>admin</strong> (Pass: admin)</p>
+                    <p>Agente Demo: <strong>agente1</strong> (Pass: 123)</p>
+                </div>
+            </div>
+            <p class="text-[10px] text-white/40 mt-8 font-light">© 2026 Landriani Blenkmann</p>
+        </div>
+    </div>
+
+    <!-- APP CONTAINER -->
+    <div id="app-container" class="hidden">
+        
+        <!-- HEADER -->
+        <header class="bg-lb-green px-4 py-3 sticky top-0 z-30 shadow-lg text-white">
+            <div class="max-w-md mx-auto flex justify-between items-center gap-3">
+                <div id="header-avatar" class="profile-avatar flex-shrink-0 bg-lb-gold text-white">
+                    <!-- JS Inyecta iniciales -->
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-base font-bold font-serif tracking-wide flex items-center gap-2 truncate">
+                        LB Relaciones 
+                        <span id="badge-admin" class="hidden bg-lb-gold text-[8px] px-1.5 py-0.5 rounded text-white uppercase tracking-wider">Master</span>
+                        <span id="badge-agent" class="hidden bg-white/20 text-[8px] px-1.5 py-0.5 rounded text-white uppercase tracking-wider">Agente</span>
+                    </h1>
+                    <p class="text-[9px] text-lb-gold uppercase tracking-wider truncate" id="header-user-name">Usuario</p>
+                </div>
+                
+                <div id="admin-controls" class="hidden mr-2">
+                    <select id="admin-agent-select" class="text-xs text-gray-800 bg-white/90 rounded px-2 py-1 border-none focus:ring-2 focus:ring-lb-gold outline-none shadow-sm">
+                        <option value="all">Ver Global</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button id="btn-add-global" class="bg-lb-gold text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform hover:bg-yellow-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+
+                    <button id="btn-logout" class="text-white/70 hover:text-white transition-colors" title="Cerrar Sesión">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto p-3">
+            
+            <!-- VISTA 1: AGENDA (Dashboard) -->
+            <div id="tab-dashboard" class="fade-in">
+                <!-- PANEL ADMIN: Resumen Diario -->
+                <div id="admin-daily-summary" class="hidden space-y-4 mb-6">
+                    <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-lb-gold flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Contactos Pendientes</p>
+                            <p id="admin-count-pending" class="text-4xl font-bold text-gray-800 mt-1">0</p>
+                            <p class="text-[9px] text-red-400 font-medium mt-1">Vencidos + Hoy</p>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-full text-lb-gold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-lb-green flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Contactados Hoy</p>
+                            <p id="admin-count-done" class="text-4xl font-bold text-lb-green mt-1">0</p>
+                            <p class="text-[9px] text-green-600 font-medium mt-1">Gestión Exitosa</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-full text-lb-green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                    </div>
+
+                    <button onclick="document.getElementById('nav-stats').click()" class="w-full py-3 text-xs text-gray-500 font-medium hover:text-lb-green underline">
+                        Ver Métricas Detalladas &rarr;
+                    </button>
+                </div>
+
+                <div id="agent-dashboard-content">
+                    <div class="flex gap-2 mb-3">
+                        <div class="relative flex-1">
+                            <input type="text" id="search-input" placeholder="Buscar contactos..." class="lb-input pl-9 py-2 text-xs shadow-sm">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        
+                        <div id="agent-tools" class="flex gap-1">
+                             <button id="btn-import-csv" class="bg-white border border-gray-200 text-lb-green w-9 rounded-lg shadow-sm hover:bg-green-50 flex items-center justify-center transition-colors" title="Importar CSV">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            </button>
+                            <input type="file" id="csv-import-input" accept=".csv" class="hidden">
+                        </div>
+                        
+                        <button id="btn-export-contacts" class="bg-white border border-gray-200 text-gray-600 w-9 rounded-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors" title="Exportar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-2 mb-2 overflow-x-auto pb-1 no-scrollbar">
+                        <button id="filter-all" class="filter-pill active">Todos</button>
+                        <button id="filter-overdue" class="filter-pill flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Vencidos</button>
+                        <button id="filter-today" class="filter-pill flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span> Hoy</button>
+                    </div>
+
+                    <div id="alpha-bar" class="flex gap-1 mb-3 overflow-x-auto pb-1 alpha-scroller border-b border-gray-100 min-h-[30px]"></div>
+                    <div id="contacts-list" class="space-y-2 pb-20"></div>
+                    <div id="empty-state" class="text-center py-12 text-gray-400 hidden">
+                        <div class="bg-gray-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <p class="text-xs">No hay contactos visibles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 2: MÉTRICAS (Dashboard Admin/Agente) -->
+            <div id="tab-stats" class="hidden fade-in space-y-3 pb-20">
+                <div class="flex justify-between items-end border-b border-gray-200 pb-2 mb-2">
+                    <h2 class="text-lg font-serif font-bold text-lb-green">Dashboard</h2>
+                    <span id="stats-context-label" class="text-[10px] uppercase font-bold text-white bg-lb-gold px-2 py-0.5 rounded shadow-sm">Global</span>
+                </div>
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-gray-600">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Base Total</p>
+                        <p id="stat-total" class="text-3xl font-bold text-gray-700 mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-lb-green">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Actividad Mensual</p>
+                        <p id="stat-month-activity" class="text-3xl font-bold text-lb-green mt-1">0</p>
+                        <p class="text-[9px] text-gray-400">interacciones registradas</p>
+                    </div>
+                </div>
+
+                <!-- Desglose por Relación (A,B,C,D) -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-700 mb-3 flex items-center gap-1">
+                        <svg class="text-lb-gold" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                        Cartera por Nivel de Relación
+                    </h3>
+                    <div class="space-y-3">
+                        <!-- Barras de progreso -->
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Nivel A (Alta)</span><span id="label-type-a" class="font-bold">0</span></div>
+                            <div class="w-full bg-gray-100 rounded-full h-2"><div id="bar-type-a" class="bg-purple-500 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Nivel B (Media)</span><span id="label-type-b" class="font-bold">0</span></div>
+                            <div class="w-full bg-gray-100 rounded-full h-2"><div id="bar-type-b" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Nivel C (Baja)</span><span id="label-type-c" class="font-bold">0</span></div>
+                            <div class="w-full bg-gray-100 rounded-full h-2"><div id="bar-type-c" class="bg-gray-400 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Nivel D (Inactivo)</span><span id="label-type-d" class="font-bold">0</span></div>
+                            <div class="w-full bg-gray-100 rounded-full h-2"><div id="bar-type-d" class="bg-red-300 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-bold text-gray-700">Actividad Histórica</h3>
+                        <input type="month" id="stats-month-picker" class="border border-gray-300 rounded px-2 py-1 text-xs text-gray-600 outline-none focus:border-lb-gold">
+                    </div>
+                    <div id="weekly-chart" class="chart-bar-container"></div>
+                </div>
+            </div>
+
+            <!-- VISTA 3: USUARIOS (SOLO ADMIN) -->
+            <div id="tab-users" class="hidden fade-in pb-20">
+                <h2 class="text-lg font-serif font-bold text-lb-green mb-4">Gestión de Agentes</h2>
+                
+                <!-- Form Creación/Edición Usuario -->
+                <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-lb-green mb-6">
+                    <h3 class="text-xs font-bold text-gray-700 uppercase mb-3 flex items-center justify-between">
+                        <span id="user-form-title" class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                            Alta de Nuevo Agente
+                        </span>
+                        <button id="cancel-edit-user" class="hidden text-[10px] text-red-500 underline">Cancelar Edición</button>
+                    </h3>
+                    <form id="create-user-form" class="space-y-3">
+                        <input type="hidden" id="edit-user-id">
+                        <div>
+                            <label class="label-tiny">Nombre Completo</label>
+                            <input id="new-user-name" type="text" placeholder="Ej: Juan Pérez" class="lb-input" required>
+                        </div>
+                        
+                        <div>
+                            <label class="label-tiny">Usuario (Email)</label>
+                            <div class="flex items-center">
+                                <input id="new-user-prefix" type="text" placeholder="juan.perez" class="lb-input rounded-r-none border-r-0" required>
+                                <div class="bg-gray-100 text-gray-500 text-[9px] px-2 py-2.5 border border-gray-200 border-l-0 rounded-r-lg font-medium whitespace-nowrap overflow-hidden">
+                                    @landrianiblenkmann.com.ar
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="label-tiny">Contraseña</label>
+                            <input id="new-user-pass" type="text" value="123456" class="lb-input bg-gray-50">
+                        </div>
+
+                        <button type="submit" id="btn-save-user" class="w-full bg-lb-green text-white font-bold py-3 rounded-lg shadow-sm text-xs hover:bg-green-800 transition-colors mt-2">
+                            CREAR AGENTE
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Lista de Usuarios -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                    <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase">Plantilla Actual</h3>
+                    </div>
+                    <div id="users-list-container" class="divide-y divide-gray-100">
+                        <!-- JS genera la lista -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 4: AGREGAR/EDITAR CONTACTO -->
+            <div id="tab-add" class="hidden fade-in pb-20">
+                <button id="btn-back-dashboard" class="text-gray-500 flex items-center gap-1 mb-4 text-xs font-medium hover:text-lb-green transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Volver
+                </button>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-lb-gold">
+                    <h2 class="text-lg font-serif font-bold text-gray-800 mb-6 flex justify-between items-center">
+                        <span id="form-title">Nuevo Contacto</span>
+                    </h2>
+                    
+                    <form id="contact-form" class="space-y-4">
+                        <input type="hidden" id="in-id">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="label-tiny">Nombre</label><input id="in-name" required class="lb-input"></div>
+                            <div><label class="label-tiny">Apellido</label><input id="in-lastname" class="lb-input"></div>
+                        </div>
+                        <div><label class="label-tiny">Teléfono</label><input id="in-phone" type="tel" class="lb-input" placeholder="+54 9..."></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-tiny">Círculo Social</label>
+                                <input list="social-options" id="in-social" class="lb-input">
+                                <datalist id="social-options"><option value="Familia"><option value="Amigos"><option value="Club"><option value="Referido"><option value="Cliente Antiguo"></datalist>
+                            </div>
+                            <div><label class="label-tiny">Profesión</label><input id="in-profession" class="lb-input"></div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="label-tiny text-lb-green">Categoría</label><select id="in-type" class="lb-input bg-white"><option value="A">A (Alta)</option><option value="B" selected>B (Media)</option><option value="C">C (Baja)</option><option value="D">D (Inactivo)</option></select></div>
+                                <div><label class="label-tiny text-lb-green">Frecuencia</label><input id="in-freq" type="number" value="30" class="lb-input text-center"></div>
+                            </div>
+                            <div><label class="label-tiny text-gray-400">Cumpleaños</label><input id="in-birthday" type="date" class="lb-input bg-white text-gray-600"></div>
+                        </div>
+                        <button type="submit" class="w-full bg-lb-green hover:bg-green-800 text-white font-bold py-3 rounded-lg shadow-md transition-all mt-2">GUARDAR REGISTRO</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+        
+        <!-- MODAL INTERACCIÓN -->
+        <div id="modal-interaction" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+                <div class="bg-lb-gold p-4 text-white flex justify-between items-center">
+                    <h3 class="font-bold text-sm">Registrar Interacción</h3>
+                    <button id="modal-cancel-btn" class="text-white/80 hover:text-white">&times;</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <p class="text-xs text-gray-500">¿Qué resultado tuvo la gestión?</p>
+                    <textarea id="modal-note" class="lb-input w-full h-24 resize-none text-xs" placeholder="Ej: Llamada exitosa, agendamos visita..."></textarea>
+                    <button id="modal-confirm-btn" class="w-full bg-lb-green text-white font-bold py-3 rounded-lg text-xs shadow hover:bg-green-800">CONFIRMAR GESTIÓN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAV INFERIOR -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+            <button id="nav-dashboard" class="nav-item active flex flex-col items-center gap-1 text-gray-400 text-[10px] w-full py-1 group">
+                <svg class="group-hover:-translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-8a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v8"></path><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Agenda
+            </button>
+            <button id="nav-stats" class="nav-item flex flex-col items-center gap-1 text-gray-400 text-[10px] w-full py-1 group">
+                <svg class="group-hover:-translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>Dashboard
+            </button>
+            <button id="nav-users" class="nav-item hidden flex flex-col items-center gap-1 text-gray-400 text-[10px] w-full py-1 group">
+                <svg class="group-hover:-translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Usuarios
+            </button>
+        </nav>
+    </div>
+
+    <!-- LÓGICA 100% LOCAL (SIN FIREBASE) -->
+    <script>
+        // --- 1. CONFIGURACIÓN DE DATOS (Usuarios) ---
+        // Se cargan desde el almacenamiento local del navegador
+        let users = JSON.parse(localStorage.getItem('lb_users')) || [];
+
+        // --- AUTOCORRECCIÓN / INICIALIZACIÓN ---
+        // Si no hay usuarios, creamos los defaults
+        if (users.length === 0) {
+            users = [
+                { id: 999, username: "admin", pass: "admin", name: "Administrador", role: "admin", active: true },
+                { id: 100, username: "agente1", pass: "123", name: "Agente Demo", role: "agent", active: true }
+            ];
+            localStorage.setItem('lb_users', JSON.stringify(users));
+        }
+
+        // --- 2. BASE DE DATOS LOCAL (Contactos) ---
+        let contacts = JSON.parse(localStorage.getItem('lb_contacts')) || [
+            { id: 101, agentId: 100, nombre: "Carlos", apellido: "Gómez", telefono: "2994123456", tipo: "A", frecuencia: 30, ultimoContacto: "2025-01-01", proximoContacto: "2025-02-01", historial: [] },
+            { id: 102, agentId: 100, nombre: "Lucía", apellido: "Méndez", telefono: "2995987654", tipo: "B", frecuencia: 60, ultimoContacto: null, proximoContacto: "2025-01-20", historial: [] },
+        ];
+
+        // --- VARIABLES DE ESTADO ---
+        let currentUser = null;
+        let viewingAsAgentId = 'all';
+        let selectedContactId = null;
+        let currentFilterStatus = 'all';
+        let currentFilterLetter = null;
+        let editingUserId = null;
+        const DOMAIN_SUFFIX = "@landrianiblenkmann.com.ar";
+
+        // --- 3. EVENTOS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btn-login').addEventListener('click', login);
+            document.getElementById('btn-logout').addEventListener('click', logout);
+            
+            // Navegación
+            document.getElementById('nav-dashboard').addEventListener('click', () => switchTab('dashboard'));
+            document.getElementById('nav-stats').addEventListener('click', () => switchTab('stats'));
+            document.getElementById('nav-users').addEventListener('click', () => switchTab('users'));
+            
+            // Acciones
+            document.getElementById('btn-add-global').addEventListener('click', () => openAddForm());
+            document.getElementById('btn-back-dashboard').addEventListener('click', () => switchTab('dashboard'));
+            
+            // CSV
+            document.getElementById('btn-import-csv').addEventListener('click', () => document.getElementById('csv-import-input').click());
+            document.getElementById('csv-import-input').addEventListener('change', handleCSVImport);
+            document.getElementById('btn-export-contacts').addEventListener('click', exportContacts);
+            
+            // Formularios
+            document.getElementById('contact-form').addEventListener('submit', handleSaveContact);
+            document.getElementById('create-user-form').addEventListener('submit', handleSaveUser);
+            document.getElementById('cancel-edit-user').addEventListener('click', cancelEditUser);
+            
+            // Filtros
+            document.getElementById('search-input').addEventListener('input', renderContactsList);
+            document.getElementById('filter-all').addEventListener('click', () => setStatusFilter('all'));
+            document.getElementById('filter-overdue').addEventListener('click', () => setStatusFilter('overdue'));
+            document.getElementById('filter-today').addEventListener('click', () => setStatusFilter('today'));
+            document.getElementById('admin-agent-select').addEventListener('change', handleAdminViewChange);
+            
+            // Modal
+            document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+            document.getElementById('modal-confirm-btn').addEventListener('click', confirmInteraction);
+        });
+
+        // --- 4. FUNCIONES DE BASE DE DATOS (LOCAL) ---
+        function saveContacts() {
+            localStorage.setItem('lb_contacts', JSON.stringify(contacts));
+            // Actualizar vista inmediatamente
+            if (currentUser.role === 'admin') {
+                updateAdminDailySummary();
+                calculateStats();
+            } else {
+                renderContactsList();
+                calculateStats();
+            }
+        }
+
+        function saveUsers() {
+            localStorage.setItem('lb_users', JSON.stringify(users));
+            renderUserList();
+        }
+
+        // --- 5. AUTH & INICIO ---
+        function login() {
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            const user = users.find(x => x.username === u && x.pass === p);
+
+            if (user) {
+                if (!user.active) { alert("Usuario inhabilitado."); return; }
+                currentUser = user;
+                initApp();
+            } else {
+                alert("Credenciales inválidas.");
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('login-pass').value = "";
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('view-login').classList.remove('hidden');
+        }
+
+        function initApp() {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('fade-in');
+            document.getElementById('header-user-name').innerText = currentUser.name;
+            
+            const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            document.getElementById('header-avatar').innerText = initials;
+            
+            if (currentUser.role === 'admin') {
+                setupAdminView();
+            } else {
+                setupAgentView();
+            }
+            initAlphaBar();
+        }
+
+        function setupAdminView() {
+            document.getElementById('badge-admin').classList.remove('hidden');
+            document.getElementById('badge-agent').classList.add('hidden');
+            document.getElementById('admin-controls').classList.remove('hidden');
+            document.getElementById('nav-users').classList.remove('hidden'); 
+            
+            document.getElementById('admin-daily-summary').classList.remove('hidden');
+            document.getElementById('agent-dashboard-content').classList.add('hidden');
+            
+            document.getElementById('btn-add-global').classList.add('hidden');
+            document.getElementById('agent-tools').classList.add('hidden'); 
+            populateAdminSelect();
+            viewingAsAgentId = 'all';
+            updateAdminDailySummary();
+            switchTab('dashboard'); 
+        }
+
+        function setupAgentView() {
+            document.getElementById('badge-admin').classList.add('hidden');
+            document.getElementById('badge-agent').classList.remove('hidden');
+            document.getElementById('admin-controls').classList.add('hidden');
+            document.getElementById('nav-users').classList.add('hidden');
+            
+            document.getElementById('admin-daily-summary').classList.add('hidden');
+            document.getElementById('agent-dashboard-content').classList.remove('hidden');
+            
+            document.getElementById('btn-add-global').classList.remove('hidden');
+            document.getElementById('agent-tools').classList.remove('hidden');
+            switchTab('dashboard');
+            renderContactsList();
+        }
+
+        // --- 6. GESTIÓN DE USUARIOS (ADMIN) ---
+        function handleSaveUser(e) {
+            e.preventDefault();
+            if (currentUser.role !== 'admin') return;
+
+            const name = document.getElementById('new-user-name').value;
+            const prefix = document.getElementById('new-user-prefix').value.trim();
+            const pass = document.getElementById('new-user-pass').value;
+
+            if(!prefix) return alert("Ingrese un usuario");
+            const fullUsername = prefix + DOMAIN_SUFFIX;
+
+            if (editingUserId) {
+                // Editar existente
+                const idx = users.findIndex(u => u.id == editingUserId);
+                if (idx !== -1) {
+                    users[idx].name = name;
+                    users[idx].username = fullUsername;
+                    users[idx].pass = pass;
+                    alert("Usuario actualizado correctamente.");
+                }
+            } else {
+                // Crear nuevo
+                if (users.some(u => u.username === fullUsername)) {
+                    alert("Usuario ya existe.");
+                    return;
+                }
+                users.push({
+                    id: Date.now(),
+                    username: fullUsername,
+                    pass: pass,
+                    name: name,
+                    role: "agent",
+                    active: true
+                });
+                alert(`Agente creado: ${fullUsername}`);
+            }
+            saveUsers();
+            cancelEditUser();
+        }
+
+        function editUser(userId) {
+            const user = users.find(u => u.id == userId);
+            if (!user) return;
+            editingUserId = userId;
+            document.getElementById('user-form-title').innerHTML = `Editando: ${user.name}`;
+            document.getElementById('new-user-name').value = user.name;
+            document.getElementById('new-user-prefix').value = user.username.split('@')[0];
+            document.getElementById('new-user-pass').value = user.pass;
+            
+            const btn = document.getElementById('btn-save-user');
+            btn.innerText = "GUARDAR CAMBIOS";
+            btn.classList.remove('bg-lb-green');
+            btn.classList.add('bg-lb-gold');
+            document.getElementById('cancel-edit-user').classList.remove('hidden');
+            
+            // Scroll hacia arriba en el modal de usuarios
+            document.getElementById('tab-users').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditUser() {
+            editingUserId = null;
+            document.getElementById('create-user-form').reset();
+            document.getElementById('user-form-title').innerHTML = `Alta de Nuevo Agente`;
+            document.getElementById('new-user-pass').value = "123456";
+            
+            const btn = document.getElementById('btn-save-user');
+            btn.innerText = "CREAR AGENTE";
+            btn.classList.add('bg-lb-green');
+            btn.classList.remove('bg-lb-gold');
+            document.getElementById('cancel-edit-user').classList.add('hidden');
+        }
+
+        function toggleUserStatus(userId) {
+            const user = users.find(u => u.id == userId);
+            if (user) {
+                user.active = !user.active;
+                saveUsers();
+            }
+        }
+
+        function renderUserList() {
+            const list = document.getElementById('users-list-container');
+            list.innerHTML = '';
+            
+            // Solo mostrar agentes en la lista
+            let agents = users.filter(u => u.role === 'agent');
+            // Ordenar: Activos arriba
+            agents.sort((a, b) => (a.active === b.active ? 0 : a.active ? -1 : 1));
+
+            agents.forEach(u => {
+                const row = document.createElement('div');
+                const rowClass = u.active ? "bg-white" : "bg-gray-100 opacity-75";
+                row.className = `px-4 py-3 flex justify-between items-center ${rowClass}`;
+                
+                const initials = u.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                const statusBadge = u.active ? 
+                    `<span class="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">ACTIVO</span>` : 
+                    `<span class="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">INACTIVO</span>`;
+                
+                const actionBtn = u.active ? 
+                    `<button onclick="toggleUserStatus(${u.id})" class="text-xs text-red-500 hover:text-red-700 font-medium underline ml-2">Desactivar</button>` : 
+                    `<button onclick="toggleUserStatus(${u.id})" class="text-xs text-green-500 hover:text-green-700 font-medium underline ml-2">Activar</button>`;
+                
+                const editBtn = `<button onclick="editUser(${u.id})" class="text-gray-400 hover:text-lb-gold mr-2">✏️</button>`;
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="profile-avatar text-[10px] w-8 h-8 flex-shrink-0" style="background-color: ${u.active ? 'var(--color-lb-green)' : '#9ca3af'}">${initials}</div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm font-bold text-gray-800">${u.name}</p>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-[10px] text-gray-500">${u.username}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">${editBtn}${actionBtn}</div>`;
+                list.appendChild(row);
+            });
+        }
+
+        // --- 7. GESTIÓN DE CONTACTOS ---
+        function getVisibleContacts() {
+            if (!currentUser) return [];
+            if (currentUser.role === 'admin') {
+                return viewingAsAgentId === 'all' ? contacts : contacts.filter(c => c.agentId == viewingAsAgentId);
+            } else {
+                return contacts.filter(c => c.agentId == currentUser.id);
+            }
+        }
+
+        function renderContactsList() {
+            if (currentUser.role === 'admin') { updateAdminDailySummary(); return; }
+
+            const list = document.getElementById('contacts-list');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            list.innerHTML = '';
+            let data = getVisibleContacts();
+
+            if (searchTerm) data = data.filter(c => c.nombre.toLowerCase().includes(searchTerm) || c.apellido.toLowerCase().includes(searchTerm));
+            if (currentFilterStatus !== 'all') data = data.filter(c => getStatus(c.proximoContacto).code === currentFilterStatus);
+            if (currentFilterLetter) data = data.filter(c => c.nombre.toUpperCase().startsWith(currentFilterLetter));
+
+            data.sort((a, b) => new Date(a.proximoContacto) - new Date(b.proximoContacto));
+
+            if (data.length === 0) { document.getElementById('empty-state').classList.remove('hidden'); return; }
+            document.getElementById('empty-state').classList.add('hidden');
+
+            data.forEach(c => {
+                const status = getStatus(c.proximoContacto);
+                const card = document.createElement('div');
+                card.className = `bg-white p-3 rounded-lg shadow-sm border border-gray-100 border-l-4 ${status.colorClass} flex justify-between items-center`;
+                card.innerHTML = `<div class="flex-1 cursor-pointer" onclick="editContact(${c.id})"><div class="flex items-center gap-1"><h3 class="font-bold text-gray-800 text-sm">${c.nombre} ${c.apellido}</h3><span class="text-[9px] font-bold px-1.5 rounded-full ${getTypeClass(c.tipo)}">${c.tipo}</span></div><div class="flex justify-between items-center pr-4 mt-1"><p class="text-[10px] text-gray-400 font-medium">${status.text}</p><p class="text-[10px] text-gray-400">${c.telefono || ''}</p></div></div><div class="flex gap-2"><a href="tel:${c.telefono}" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-green-100 hover:text-green-600 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></a><button onclick="openInteractionModal(${c.id})" class="w-8 h-8 rounded-full bg-lb-gold text-white flex items-center justify-center shadow-sm hover:bg-yellow-600 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button></div>`;
+                list.appendChild(card);
+            });
+        }
+
+        function handleSaveContact(e) {
+            e.preventDefault();
+            const id = document.getElementById('in-id').value;
+            const nombre = document.getElementById('in-name').value;
+            const apellido = document.getElementById('in-lastname').value;
+            const telefono = document.getElementById('in-phone').value;
+            const tipo = document.getElementById('in-type').value;
+            const frecuencia = parseInt(document.getElementById('in-freq').value);
+            const social = document.getElementById('in-social').value;
+            const profesion = document.getElementById('in-profession').value;
+            const cumple = document.getElementById('in-birthday').value;
+
+            if (id) {
+                const idx = contacts.findIndex(x => x.id == id);
+                if (idx !== -1) {
+                    contacts[idx].nombre = nombre;
+                    contacts[idx].apellido = apellido;
+                    contacts[idx].telefono = telefono;
+                    contacts[idx].tipo = tipo;
+                    contacts[idx].frecuencia = frecuencia;
+                    contacts[idx].social = social;
+                    contacts[idx].profesion = profesion;
+                    contacts[idx].cumple = cumple;
+                }
+            } else {
+                if (currentUser.role === 'admin') return;
+                contacts.push({
+                    id: Date.now(),
+                    agentId: currentUser.id,
+                    nombre: nombre, apellido: apellido, telefono: telefono, tipo: tipo,
+                    frecuencia: frecuencia, social: social, profesion: profesion, cumple: cumple,
+                    ultimoContacto: null,
+                    proximoContacto: new Date().toISOString().split('T')[0],
+                    historial: []
+                });
+            }
+            saveContacts();
+            switchTab('dashboard');
+        }
+
+        function editContact(id) {
+            const c = contacts.find(x => x.id == id);
+            if (!c) return;
+            document.getElementById('in-id').value = c.id;
+            document.getElementById('in-name').value = c.nombre;
+            document.getElementById('in-lastname').value = c.apellido;
+            document.getElementById('in-phone').value = c.telefono;
+            document.getElementById('in-type').value = c.tipo;
+            document.getElementById('in-freq').value = c.frecuencia;
+            document.getElementById('in-social').value = c.social || '';
+            document.getElementById('in-profession').value = c.profesion || '';
+            document.getElementById('in-birthday').value = c.cumple || '';
+            switchTab('add');
+            document.getElementById('form-title').innerText = "Editar Contacto";
+        }
+
+        function openInteractionModal(id) {
+            selectedContactId = id;
+            document.getElementById('modal-interaction').classList.remove('hidden');
+            document.getElementById('modal-interaction').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-interaction').classList.add('hidden');
+            document.getElementById('modal-interaction').classList.remove('flex');
+            selectedContactId = null;
+        }
+
+        function confirmInteraction() {
+            if (!selectedContactId) return;
+            const note = document.getElementById('modal-note').value;
+            const today = new Date().toISOString().split('T')[0];
+            const idx = contacts.findIndex(x => x.id == selectedContactId);
+            
+            if (idx !== -1) {
+                const c = contacts[idx];
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + c.frecuencia);
+                
+                c.ultimoContacto = today;
+                c.proximoContacto = nextDate.toISOString().split('T')[0];
+                c.historial.unshift({ date: today, note: note, user: currentUser.username });
+                saveContacts();
+            }
+            document.getElementById('modal-note').value = "";
+            closeModal();
+        }
+
+        // --- 8. FUNCIONES ADMIN ---
+        function updateAdminDailySummary() {
+            if (currentUser.role !== 'admin') return;
+            const data = getVisibleContacts(); 
+            const today = new Date().toISOString().split('T')[0];
+            
+            const doneToday = data.filter(c => c.ultimoContacto === today).length;
+            const pending = data.filter(c => {
+                const status = getStatus(c.proximoContacto);
+                return (status.code === 'today' || status.code === 'overdue') && c.ultimoContacto !== today;
+            }).length;
+
+            document.getElementById('admin-count-pending').innerText = pending;
+            document.getElementById('admin-count-done').innerText = doneToday;
+        }
+
+        function populateAdminSelect() {
+            const select = document.getElementById('admin-agent-select');
+            select.innerHTML = '<option value="all">Ver Global</option>';
+            users.filter(u => u.role === 'agent').forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.innerText = u.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function handleAdminViewChange() { 
+            viewingAsAgentId = document.getElementById('admin-agent-select').value; 
+            updateAdminDailySummary();
+            calculateStats(); 
+        }
+
+        // --- UTILS & HELPERS ---
+        function getStatus(dateStr) {
+            if (!dateStr) return { code: 'future', text: 'Sin fecha', colorClass: 'border-l-gray-300' };
+            const today = new Date(); today.setHours(0,0,0,0);
+            const target = new Date(dateStr + 'T00:00:00');
+            const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+            if (diff < 0) return { code: 'overdue', text: `${Math.abs(diff)}d atraso`, colorClass: 'border-l-red-500' };
+            if (diff === 0) return { code: 'today', text: 'HOY', colorClass: 'border-l-yellow-400' };
+            return { code: 'future', text: `En ${diff} días`, colorClass: 'border-l-green-500' };
+        }
+
+        function getTypeClass(type) {
+            if (type === 'A') return 'bg-purple-100 text-purple-700';
+            if (type === 'B') return 'bg-blue-100 text-blue-700';
+            return 'bg-gray-100 text-gray-600';
+        }
+
+        function setStatusFilter(status) {
+            currentFilterStatus = status;
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            document.getElementById(`filter-${status}`).classList.add('active');
+            renderContactsList();
+        }
+
+        function initAlphaBar() {
+            const bar = document.getElementById('alpha-bar');
+            bar.innerHTML = '';
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
+                const btn = document.createElement('button');
+                btn.innerText = l;
+                btn.className = 'alpha-btn flex-shrink-0';
+                btn.onclick = () => {
+                    if (currentFilterLetter === l) { currentFilterLetter = null; btn.classList.remove('active'); } 
+                    else { document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active')); currentFilterLetter = l; btn.classList.add('active'); }
+                    renderContactsList();
+                };
+                bar.appendChild(btn);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-stats').classList.add('hidden');
+            document.getElementById('tab-add').classList.add('hidden');
+            document.getElementById('tab-users').classList.add('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            if(tabName !== 'add') document.getElementById(`nav-${tabName}`).classList.add('active');
+            if (tabName === 'dashboard') renderContactsList();
+            if (tabName === 'stats') calculateStats();
+            if (tabName === 'users') renderUserList();
+        }
+
+        // --- CSV ---
+        function handleCSVImport(event) {
+            if (currentUser.role === 'admin') return;
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let count = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length >= 2) {
+                        contacts.push({
+                            id: Date.now() + i,
+                            agentId: currentUser.id,
+                            nombre: cols[0]?.trim() || "Sin Nombre",
+                            apellido: cols[1]?.trim() || "",
+                            telefono: cols[2]?.trim() || "",
+                            tipo: cols[3]?.trim().toUpperCase() || "B",
+                            frecuencia: parseInt(cols[4]) || 30,
+                            social: cols[5]?.trim() || "",
+                            profesion: cols[6]?.trim() || "",
+                            cumple: cols[7]?.trim() || "",
+                            ultimoContacto: null,
+                            proximoContacto: new Date().toISOString().split('T')[0],
+                            historial: []
+                        });
+                        count++;
+                    }
+                }
+                alert(`Se importaron ${count} contactos.`);
+                saveContacts();
+                renderContactsList();
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        function downloadCSV(content, fileName) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName; link.click();
+        }
+
+        function downloadTemplate() {
+            const headers = "Nombre,Apellido,Telefono,Tipo,Frecuencia,Social,Profesion,Cumple\n";
+            const example = "Juan,Perez,299123456,B,30,Club,Abogado,1990-01-01\nMaria,Gomez,299654321,A,15,Familia,Contadora,1985-05-20\n";
+            downloadCSV(headers + example, "Plantilla_Carga_LB.csv");
+        }
+        
+        function exportContacts() {
+            const data = getVisibleContacts();
+            let csv = "ID,Nombre,Apellido,Telefono,Tipo,Frecuencia,Social,Profesion,Cumple,UltimoContacto,ProximoContacto\n";
+            data.forEach(c => { csv += `${c.id},${c.nombre},${c.apellido},${c.telefono},${c.tipo},${c.frecuencia},${c.social || ''},${c.profesion || ''},${c.cumple || ''},${c.ultimoContacto || ''},${c.proximoContacto}\n`; });
+            downloadCSV(csv, `LB_Contactos_${currentUser.username}.csv`);
+        }
+
+        // --- DASHBOARD CHARTS ---
+        function calculateStats() {
+            let data = getVisibleContacts();
+            document.getElementById('stat-total').innerText = data.length;
+            const now = new Date(); const currentMonth = now.getMonth(); const currentYear = now.getFullYear();
+            let monthlyActivity = 0;
+            data.forEach(c => { if(c.historial) c.historial.forEach(h => { const d = new Date(h.date); if(d.getMonth() === currentMonth && d.getFullYear() === currentYear) monthlyActivity++; }); });
+            document.getElementById('stat-month-activity').innerText = monthlyActivity;
+            const types = { A: 0, B: 0, C: 0, D: 0 };
+            data.forEach(c => { if(types[c.tipo] !== undefined) types[c.tipo]++; });
+            const total = data.length || 1;
+            ['A', 'B', 'C', 'D'].forEach(t => {
+                const pct = (types[t] / total) * 100;
+                document.getElementById(`label-type-${t.toLowerCase()}`).innerText = `${types[t]} (${Math.round(pct)}%)`;
+                document.getElementById(`bar-type-${t.toLowerCase()}`).style.width = `${pct}%`;
+            });
+            const contextLabel = document.getElementById('stats-context-label');
+            contextLabel.innerText = currentUser.role === 'admin' ? (viewingAsAgentId === 'all' ? 'Global' : users.find(u => u.id == viewingAsAgentId)?.name) : 'Personal';
+            const container = document.getElementById('weekly-chart');
+            container.innerHTML = '';
+            [monthlyActivity > 5 ? monthlyActivity : 5, 12, 8, 20, 15].forEach((val, i) => {
+                const h = Math.min(val * 4, 100);
+                container.innerHTML += `<div class="chart-bar-wrapper"><div class="chart-value">${val}</div><div class="chart-bar" style="height: ${h}%"></div><div class="chart-label">Sem ${i+1}</div></div>`;
+            });
+        }
+    </script>
+</body>
+</html>
